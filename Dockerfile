@@ -1,7 +1,20 @@
+ARG GO_VERSION=1.17.4
+FROM golang:${GO_VERSION}-alpine AS builder
+MAINTAINER accalina
+
+RUN apk update && apk add alpine-sdk git && rm -rf /var/cache/apk/*
+RUN mkdir -p /api
+WORKDIR /api
+COPY backend/go.mod .
+COPY backend/go.sum .
+RUN go mod download
+COPY backend/. .
+RUN go build -o ./pdfserver ./main.go
+
+
 FROM alpine:3.13
 MAINTAINER Fabian Beuke <mail@beuke.org>
-
-RUN apk add --update --no-cache \
+RUN apk add --update --no-cache ca-certificates \
     libgcc libstdc++ libx11 glib libxrender libxext libintl \
     ttf-dejavu ttf-droid ttf-freefont ttf-liberation ttf-ubuntu-font-family
 
@@ -15,4 +28,9 @@ ENV BUILD_LOG=https://api.travis-ci.org/v3/job/606718795/log.txt
 RUN [ "$(sha256sum /bin/wkhtmltopdf | awk '{ print $1 }')" == \
       "$(wget -q -O - $BUILD_LOG | sed -n '13685p' | awk '{ print $1 }')" ]
 
-ENTRYPOINT ["wkhtmltopdf"]
+RUN mkdir -p /api /api/public
+WORKDIR /api
+COPY --from=builder /api/pdfserver .
+
+EXPOSE 8090
+ENTRYPOINT ["./pdfserver"]

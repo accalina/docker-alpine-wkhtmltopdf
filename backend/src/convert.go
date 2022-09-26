@@ -19,8 +19,8 @@ func HandlePDF(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	url_payload := string(requestBody.Url)
-	res1 := strings.ReplaceAll(url_payload, "&", "")
+	urlPayload := string(requestBody.Url)
+	res1 := strings.ReplaceAll(urlPayload, "&&", "")
 	res2 := strings.ReplaceAll(res1, "|", "")
 
 	cmd := exec.Command("wkhtmltopdf", res2, "public/report.pdf")

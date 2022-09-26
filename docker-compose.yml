@@ -2,7 +2,7 @@ version: "3.5"
 services:
   gin_fileserver:
     build: .
-    image: accalina/gin_pdfserver:1.0
+    image: accalina/gin_pdfserver:1.1
     container_name: gin_pdfserver
     volumes:
       - './data:/api/public/'
